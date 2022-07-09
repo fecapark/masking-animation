@@ -1,0 +1,59 @@
+#app > .container > .info-container {
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+  padding: 2em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  font-size: 20px;
+
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.7) 5%,
+    rgba(0, 0, 0, 0.5) 60%,
+    rgba(0, 0, 0, 0)
+  );
+}
+
+#app > .container > .info-container > .title {
+  font-weight: 300;
+  color: white;
+  font-size: 1em;
+  margin-bottom: min(0.5em, 15px);
+  opacity: 0;
+}
+
+#app > .container > .info-container > .from {
+  font-weight: 300;
+  font-size: max(0.5em, 12px);
+  color: white;
+  opacity: 0;
+}
+
+@media screen and (min-width: 333px) {
+  #app > .container > .info-container {
+    font-size: 22px;
+  }
+}
+
+@media screen and (min-width: 450px) {
+  #app > .container > .info-container {
+    font-size: 26px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  #app > .container > .info-container {
+    font-size: 30px;
+  }
+}
+
+@media screen and (min-width: 1000px) {
+  #app > .container > .info-container {
+    font-size: 34px;
+  }
+}
