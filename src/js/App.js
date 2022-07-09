@@ -1,9 +1,12 @@
+import { runFadeInfo } from "./animations/FadeInfo.js";
 import Mask from "./components/Mask/Mask.js";
 import { Vector2 } from "./lib/Vector/Vector.js";
 
 export default class App {
   constructor(target) {
     this.target = target;
+
+    this.textAppeared = false;
 
     // About canvas
     this.canvas = document.createElement("canvas");
@@ -36,6 +39,7 @@ export default class App {
     this.ctx.scale(this.pixelRatio, this.pixelRatio);
 
     this.resizeImage();
+    this.mask.resize();
   }
 
   renderContent() {
@@ -47,7 +51,7 @@ export default class App {
       </div>
       <div class="info-container">
         <span class="title">Café Terrace at Night</span>
-        <span class="sub-title">Vincent van Gogh, 1888</span>
+        <span class="from">Vincent van Gogh, 1888</span>
       </div>
     `;
   }
@@ -85,10 +89,10 @@ export default class App {
   setMask(e) {
     e.stopPropagation();
 
-    if (!this.mask.ready) return;
+    if (!this.mask.isReady) return;
 
     const pos = new Vector2(e.offsetX, e.offsetY);
-    this.mask.setAnimator(pos, 1, [0.22, 0.68, 0, 1]);
+    this.mask.setAnimator(pos, 1.3, [0.22, 0.68, 0, 1]);
     this.canvas.style.cursor = "default";
   }
 
