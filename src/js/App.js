@@ -1,12 +1,11 @@
-import { runFadeInfo } from "./animations/FadeInfo.js";
+import { runResetMask } from "./animations/ResetMask.js";
+import Info from "./components/Info/Info.js";
 import Mask from "./components/Mask/Mask.js";
 import { Vector2 } from "./lib/Vector/Vector.js";
 
 export default class App {
   constructor(target) {
     this.target = target;
-
-    this.textAppeared = false;
 
     // About canvas
     this.canvas = document.createElement("canvas");
@@ -15,6 +14,7 @@ export default class App {
 
     // Components
     this.mask = new Mask(this);
+    this.info = new Info(this);
     this.image = null;
 
     // About resize
@@ -27,7 +27,7 @@ export default class App {
     this.setImage();
     this.animateMask();
 
-    document.addEventListener("pointerdown", this.setMask.bind(this));
+    document.addEventListener("click", this.setMask.bind(this));
   }
 
   resize() {
@@ -46,14 +46,27 @@ export default class App {
     const container = document.querySelector(".container");
     container.innerHTML = `
       <div class="img-wrapper"></div>
-      <div class="reload-container">
-        <i class="fa-solid fa-arrow-rotate-right"></i>
-      </div>
-      <div class="info-container">
-        <span class="title">Café Terrace at Night</span>
-        <span class="from">Vincent van Gogh, 1888</span>
-      </div>
     `;
+    container.addEventListener("click", () => {
+      if (this.mask.reseting) return;
+      this.mask.reseting = true;
+      this.info.container.style.zIndex = "1000";
+
+      requestAnimationFrame(() => {
+        runResetMask(this.canvas, this.info.container, () => {
+          this.info.container.style.zIndex = "";
+          this.info.container.style.opacity = "";
+          this.info.container.style.background = "";
+          this.mask.setReady();
+        });
+      });
+    });
+
+    this.info.setText({
+      title: "Café Terrace at Night",
+      from: "Vincent van Gogh, 1888",
+    });
+    container.appendChild(this.info.container);
   }
 
   setImage() {
@@ -92,7 +105,15 @@ export default class App {
     if (!this.mask.isReady) return;
 
     const pos = new Vector2(e.offsetX, e.offsetY);
-    this.mask.setAnimator(pos, 1.3, [0.22, 0.68, 0, 1]);
+    this.mask.setAnimator(pos, {
+      duration: 1.3,
+      ease: [0.22, 0.68, 0, 1],
+      onEnd: () => {
+        this.canvas.style.cursor = "";
+        this.canvas.style.transform = "translate3d(-100%, 0, 0)";
+        this.mask.resetMask();
+      },
+    });
     this.canvas.style.cursor = "default";
   }
 

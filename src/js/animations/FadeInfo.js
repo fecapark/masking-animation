@@ -58,7 +58,7 @@ function sweptAnimation(infoContainer, maskPos) {
           },
         ],
         duration: 0.35,
-        delay: 0.1,
+        delay: 0.05,
         bezier: "material-normal",
       },
     ],
