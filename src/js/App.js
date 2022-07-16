@@ -1,6 +1,7 @@
 import { runResetMask } from "./animations/ResetMask.js";
 import Info from "./components/Info/Info.js";
 import Mask from "./components/Mask/Mask.js";
+import ImageManager from "./core/imageManager.js";
 import { Vector2 } from "./lib/Vector/Vector.js";
 
 export default class App {
@@ -15,7 +16,7 @@ export default class App {
     // Components
     this.mask = new Mask(this);
     this.info = new Info(this);
-    this.image = null;
+    this.imageManager = new ImageManager(this);
 
     // About resize
     this.pixelRatio = window.devicePixelRatio > 1 ? 2 : 1;
@@ -24,8 +25,8 @@ export default class App {
 
     // Init mask and content
     this.renderContent();
-    this.setImage();
     this.animateMask();
+    this.imageManager.setImage();
 
     document.addEventListener("click", this.setMask.bind(this));
   }
@@ -38,7 +39,7 @@ export default class App {
     this.canvas.height = this.stageHeight * this.pixelRatio;
     this.ctx.scale(this.pixelRatio, this.pixelRatio);
 
-    this.resizeImage();
+    this.imageManager.resize();
     this.mask.resize();
   }
 
@@ -57,46 +58,18 @@ export default class App {
           this.info.container.style.zIndex = "";
           this.info.container.style.opacity = "";
           this.info.container.style.background = "";
+          this.info.infoAppeared = false;
+
           this.mask.setReady();
+          this.imageManager.nextImage();
+
+          this.info.setText(this.imageManager.currentInfo);
         });
       });
     });
 
-    this.info.setText({
-      title: "Café Terrace at Night",
-      from: "Vincent van Gogh, 1888",
-    });
+    this.info.setText(this.imageManager.currentInfo);
     container.appendChild(this.info.container);
-  }
-
-  setImage() {
-    this.image = new Image();
-    this.image.src = "img/gogh.jpg";
-    this.image.onload = () => {
-      document.querySelector(".img-wrapper").appendChild(this.image);
-      this.mask.setReady();
-      this.resizeImage();
-    };
-  }
-
-  resizeImage() {
-    if (!this.image) return;
-
-    const stageRatio = this.stageWidth / this.stageHeight;
-    const imageRatio = this.image.naturalWidth / this.image.naturalHeight;
-
-    this.image.width = this.stageWidth;
-    this.image.height = this.stageHeight;
-
-    if (stageRatio > imageRatio) {
-      this.image.height = Math.round(
-        this.image.naturalHeight * (this.stageWidth / this.image.naturalWidth)
-      );
-    } else {
-      this.image.width = Math.round(
-        this.image.naturalWidth * (this.stageHeight / this.image.naturalHeight)
-      );
-    }
   }
 
   setMask(e) {

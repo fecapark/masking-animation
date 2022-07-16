@@ -38,7 +38,7 @@ function moveMask(mask, info) {
 
 function hideInfo(info) {
   return [
-    getDummyAnimationData(1),
+    getDummyAnimationData(0.85),
     {
       target: info,
       styles: [
@@ -57,8 +57,10 @@ function hideInfo(info) {
 }
 
 export function runResetMask(mask, info, onEnd = () => {}) {
-  return new SequenceAnimator(
-    [...moveMask(mask, info), ...hideInfo(info)],
-    onEnd
-  ).play();
+  requestAnimationFrame(() => {
+    new SequenceAnimator(
+      [...moveMask(mask, info), ...hideInfo(info)],
+      onEnd
+    ).play();
+  });
 }

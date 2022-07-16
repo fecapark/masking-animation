@@ -14,7 +14,9 @@ export default class Mask {
 
     this.radius = 0;
     this.pos = new Vector2(0, 0);
-    this.globalTextOpacity = 1;
+    this.globalTextOpacity = 0;
+    this.progressTextOpacity = 1;
+    this.startGlobalOpacity = false;
     this.oSpeed = 0.05;
   }
 
@@ -44,7 +46,8 @@ export default class Mask {
 
     const parseToColorHex = (num) => {
       num *= 255;
-      return Math.floor(num).toString(16);
+      const hex = Math.floor(num).toString(16);
+      return hex.length < 2 ? `0${hex}` : hex;
     };
 
     const drawCover = () => {
@@ -58,7 +61,6 @@ export default class Mask {
       this.ctx.font = `300 24px Roboto`;
       this.ctx.textAlign = "center";
       this.ctx.fillStyle = `#ffffff${parseToColorHex(this.globalTextOpacity)}`;
-      console.log(this.globalTextOpacity.toString(16));
       this.ctx.fillText(
         "Masking Animation",
         this.app.stageWidth / 2,
@@ -73,6 +75,20 @@ export default class Mask {
       this.ctx.fillStyle = `#e8e8e8${parseToColorHex(this.globalTextOpacity)}`;
       this.ctx.fillText(
         "CLICK ANYWHERE",
+        this.app.stageWidth / 2,
+        this.app.stageHeight / 2
+      );
+    };
+
+    const drawProgressText = () => {
+      this.ctx.beginPath();
+      this.ctx.font = "300 14px Roboto";
+      this.ctx.textAlign = "center";
+      this.ctx.fillStyle = `#e8e8e8${parseToColorHex(
+        this.progressTextOpacity
+      )}`;
+      this.ctx.fillText(
+        `Loading... ${this.app.imageManager.totalLoadPercentage}%`,
         this.app.stageWidth / 2,
         this.app.stageHeight / 2
       );
@@ -101,6 +117,7 @@ export default class Mask {
     drawCover();
     drawTitle();
     drawGuideText();
+    drawProgressText();
     drawCopyright();
     this.ctx.globalCompositeOperation = "destination-out";
     drawMask();
@@ -111,13 +128,28 @@ export default class Mask {
     this.runMaskAnimator();
     this.checkMaskColideWithInfo();
 
-    if (!this.reseting) {
+    if (this.reseting) {
+      this.globalTextOpacity = 0;
+    } else if (this.startGlobalOpacity) {
       this.globalTextOpacity = Math.min(
         this.globalTextOpacity + this.oSpeed,
         1
       );
-    } else {
+    }
+
+    if (!this.app.imageManager.allLoaded) {
       this.globalTextOpacity = 0;
+    } else if (this.progressTextOpacity > 0) {
+      this.progressTextOpacity = Math.max(
+        this.progressTextOpacity - this.oSpeed,
+        0
+      );
+
+      if (this.progressTextOpacity === 0) {
+        setTimeout(() => {
+          this.startGlobalOpacity = true;
+        }, 700);
+      }
     }
   }
 
@@ -149,6 +181,7 @@ export default class Mask {
 
   checkMaskColideWithInfo() {
     const centerPos = this.app.info.getCenterPos();
+
     if (
       centerPos.getDistWith(this.pos) < this.radius &&
       !this.app.info.infoAppeared
