@@ -57,6 +57,8 @@ function hideInfo(info) {
 }
 
 export function runResetMask(mask, info, onEnd = () => {}) {
+  info.style.zIndex = "1000";
+
   requestAnimationFrame(() => {
     new SequenceAnimator(
       [...moveMask(mask, info), ...hideInfo(info)],
