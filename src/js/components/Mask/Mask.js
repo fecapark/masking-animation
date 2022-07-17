@@ -5,6 +5,7 @@ import { Vector2 } from "../../lib/Vector/Vector.js";
 export default class Mask {
   constructor(app) {
     this.app = app;
+    this.canvas = app.canvas;
     this.ctx = app.ctx;
 
     this.animationState = -1; // -1: disabled, 0: ready, 1: animating, 2: end
@@ -43,6 +44,7 @@ export default class Mask {
 
   draw() {
     const paddingSize = 50;
+    const { stageWidth, stageHeight } = this.app;
 
     const parseToColorHex = (num) => {
       num *= 255;
@@ -53,7 +55,7 @@ export default class Mask {
     const drawCover = () => {
       this.ctx.beginPath();
       this.ctx.fillStyle = "#212121";
-      this.ctx.fillRect(0, 0, this.app.stageWidth, this.app.stageHeight);
+      this.ctx.fillRect(0, 0, stageWidth, stageHeight);
     };
 
     const drawTitle = () => {
@@ -61,11 +63,7 @@ export default class Mask {
       this.ctx.font = `300 24px Roboto`;
       this.ctx.textAlign = "center";
       this.ctx.fillStyle = `#ffffff${parseToColorHex(this.globalTextOpacity)}`;
-      this.ctx.fillText(
-        "Masking Animation",
-        this.app.stageWidth / 2,
-        paddingSize
-      );
+      this.ctx.fillText("Masking Animation", stageWidth / 2, paddingSize);
     };
 
     const drawGuideText = () => {
@@ -73,11 +71,7 @@ export default class Mask {
       this.ctx.font = `300 14px Roboto`;
       this.ctx.textAlign = "center";
       this.ctx.fillStyle = `#e8e8e8${parseToColorHex(this.globalTextOpacity)}`;
-      this.ctx.fillText(
-        "CLICK ANYWHERE",
-        this.app.stageWidth / 2,
-        this.app.stageHeight / 2
-      );
+      this.ctx.fillText("CLICK ANYWHERE", stageWidth / 2, stageHeight / 2);
     };
 
     const drawProgressText = () => {
@@ -89,8 +83,8 @@ export default class Mask {
       )}`;
       this.ctx.fillText(
         `Loading... ${this.app.imageManager.totalLoadPercentage}%`,
-        this.app.stageWidth / 2,
-        this.app.stageHeight / 2
+        stageWidth / 2,
+        stageHeight / 2
       );
     };
 
@@ -101,8 +95,8 @@ export default class Mask {
       this.ctx.fillStyle = `#e0e0e0${parseToColorHex(this.globalTextOpacity)}`;
       this.ctx.fillText(
         "Copyright © 2022 Sanghyeok Park. All rights reserved.",
-        this.app.stageWidth / 2,
-        this.app.stageHeight - paddingSize
+        stageWidth / 2,
+        stageHeight - paddingSize
       );
     };
 
@@ -113,7 +107,7 @@ export default class Mask {
       this.ctx.fill();
     };
 
-    this.ctx.clearRect(0, 0, this.app.stageWidth, this.app.stageHeight);
+    this.ctx.clearRect(0, 0, stageWidth, stageHeight);
     drawCover();
     drawTitle();
     drawGuideText();
@@ -128,28 +122,35 @@ export default class Mask {
     this.runMaskAnimator();
     this.checkMaskColideWithInfo();
 
+    this.manageGlobalTextOpacity();
+    this.manageProgressTextOpacity();
+  }
+
+  manageGlobalTextOpacity() {
+    if (!this.startGlobalOpacity) return;
     if (this.reseting) {
       this.globalTextOpacity = 0;
-    } else if (this.startGlobalOpacity) {
-      this.globalTextOpacity = Math.min(
-        this.globalTextOpacity + this.oSpeed,
-        1
-      );
+      return;
     }
 
-    if (!this.app.imageManager.allLoaded) {
-      this.globalTextOpacity = 0;
-    } else if (this.progressTextOpacity > 0) {
-      this.progressTextOpacity = Math.max(
-        this.progressTextOpacity - this.oSpeed,
-        0
-      );
+    this.globalTextOpacity = Math.min(this.globalTextOpacity + this.oSpeed, 1);
+  }
 
-      if (this.progressTextOpacity === 0) {
-        setTimeout(() => {
-          this.startGlobalOpacity = true;
-        }, 700);
-      }
+  manageProgressTextOpacity() {
+    if (!this.app.imageManager.allLoaded) return;
+    if (this.progressTextOpacity === 0) return;
+
+    const START_DELAY = 300;
+
+    this.progressTextOpacity = Math.max(
+      this.progressTextOpacity - this.oSpeed,
+      0
+    );
+
+    if (this.progressTextOpacity === 0) {
+      setTimeout(() => {
+        this.startGlobalOpacity = true;
+      }, START_DELAY);
     }
   }
 
@@ -164,6 +165,7 @@ export default class Mask {
     this.animationState = -1;
     this.maskAnimator = null;
     this.pos = new Vector2(0, 0);
+    this.canvas.style.transform = "translate3d(-100%, 0, 0)";
   }
 
   runMaskAnimator() {

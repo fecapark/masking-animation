@@ -43,30 +43,24 @@ export default class App {
     this.mask.resize();
   }
 
+  handleExecuteResetMask() {
+    if (this.mask.reseting) return;
+    this.mask.reseting = true;
+
+    runResetMask(this.canvas, this.info.container, () => {
+      this.mask.setReady();
+      this.imageManager.nextImage();
+      this.info.resetStyles();
+      this.info.setText(this.imageManager.currentInfo);
+    });
+  }
+
   renderContent() {
     const container = document.querySelector(".container");
     container.innerHTML = `
       <div class="img-wrapper"></div>
     `;
-    container.addEventListener("click", () => {
-      if (this.mask.reseting) return;
-      this.mask.reseting = true;
-      this.info.container.style.zIndex = "1000";
-
-      requestAnimationFrame(() => {
-        runResetMask(this.canvas, this.info.container, () => {
-          this.info.container.style.zIndex = "";
-          this.info.container.style.opacity = "";
-          this.info.container.style.background = "";
-          this.info.infoAppeared = false;
-
-          this.mask.setReady();
-          this.imageManager.nextImage();
-
-          this.info.setText(this.imageManager.currentInfo);
-        });
-      });
-    });
+    container.addEventListener("click", this.handleExecuteResetMask.bind(this));
 
     this.info.setText(this.imageManager.currentInfo);
     container.appendChild(this.info.container);
@@ -82,12 +76,9 @@ export default class App {
       duration: 1.3,
       ease: [0.22, 0.68, 0, 1],
       onEnd: () => {
-        this.canvas.style.cursor = "";
-        this.canvas.style.transform = "translate3d(-100%, 0, 0)";
         this.mask.resetMask();
       },
     });
-    this.canvas.style.cursor = "default";
   }
 
   animateMask() {

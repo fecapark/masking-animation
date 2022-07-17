@@ -41,4 +41,11 @@ export default class Info {
     const fromPos = getCenterPosFrom(this.from);
     return titlePos.add(fromPos).div(2);
   }
+
+  resetStyles() {
+    this.container.style.zIndex = "";
+    this.container.style.opacity = "";
+    this.container.style.background = "";
+    this.infoAppeared = false;
+  }
 }
