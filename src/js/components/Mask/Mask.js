@@ -135,7 +135,11 @@ export default class Mask {
   }
 
   controlPaddingSize() {
-    if (!this.startGlobalOpacity || this.reseting) return;
+    if (!this.startGlobalOpacity) return;
+    if (this.reseting) {
+      this.paddingSize = -50;
+      return;
+    }
 
     const accel = (this.targetPaddingSize - this.paddingSize) / 50;
     this.pSpeed += accel;
