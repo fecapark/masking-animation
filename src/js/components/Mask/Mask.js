@@ -15,10 +15,16 @@ export default class Mask {
 
     this.radius = 0;
     this.pos = new Vector2(0, 0);
+
     this.globalTextOpacity = 0;
+    this.guideTextOpacity = -1;
     this.progressTextOpacity = 1;
     this.startGlobalOpacity = false;
     this.oSpeed = 0.05;
+
+    this.paddingSize = -50;
+    this.targetPaddingSize = 50;
+    this.pSpeed = 0;
   }
 
   get isDisabled() {
@@ -43,7 +49,6 @@ export default class Mask {
   }
 
   draw() {
-    const paddingSize = 50;
     const { stageWidth, stageHeight } = this.app;
 
     const parseToColorHex = (num) => {
@@ -63,14 +68,16 @@ export default class Mask {
       this.ctx.font = `300 24px Roboto`;
       this.ctx.textAlign = "center";
       this.ctx.fillStyle = `#ffffff${parseToColorHex(this.globalTextOpacity)}`;
-      this.ctx.fillText("Masking Animation", stageWidth / 2, paddingSize);
+      this.ctx.fillText("Masking Animation", stageWidth / 2, this.paddingSize);
     };
 
     const drawGuideText = () => {
       this.ctx.beginPath();
       this.ctx.font = `300 14px Roboto`;
       this.ctx.textAlign = "center";
-      this.ctx.fillStyle = `#e8e8e8${parseToColorHex(this.globalTextOpacity)}`;
+      this.ctx.fillStyle = `#e8e8e8${parseToColorHex(
+        Math.max(this.guideTextOpacity, 0)
+      )}`;
       this.ctx.fillText("CLICK ANYWHERE", stageWidth / 2, stageHeight / 2);
     };
 
@@ -96,7 +103,7 @@ export default class Mask {
       this.ctx.fillText(
         "Copyright © 2022 Sanghyeok Park. All rights reserved.",
         stageWidth / 2,
-        stageHeight - paddingSize
+        stageHeight - this.paddingSize
       );
     };
 
@@ -124,16 +131,28 @@ export default class Mask {
 
     this.manageGlobalTextOpacity();
     this.manageProgressTextOpacity();
+    this.controlPaddingSize();
+  }
+
+  controlPaddingSize() {
+    if (!this.startGlobalOpacity || this.reseting) return;
+
+    const accel = (this.targetPaddingSize - this.paddingSize) / 50;
+    this.pSpeed += accel;
+    this.pSpeed *= 0.82;
+    this.paddingSize += this.pSpeed;
   }
 
   manageGlobalTextOpacity() {
     if (!this.startGlobalOpacity) return;
     if (this.reseting) {
       this.globalTextOpacity = 0;
+      this.guideTextOpacity = -1;
       return;
     }
 
     this.globalTextOpacity = Math.min(this.globalTextOpacity + this.oSpeed, 1);
+    this.guideTextOpacity = Math.min(this.guideTextOpacity + this.oSpeed, 1);
   }
 
   manageProgressTextOpacity() {
@@ -162,10 +181,12 @@ export default class Mask {
   resetMask() {
     this.radius = 0;
     this.globalTextOpacity = 0;
+    this.guideTextOpacity = -1;
     this.animationState = -1;
     this.maskAnimator = null;
     this.pos = new Vector2(0, 0);
     this.canvas.style.transform = "translate3d(-100%, 0, 0)";
+    this.paddingSize = -50;
   }
 
   runMaskAnimator() {
